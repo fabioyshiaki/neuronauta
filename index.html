@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeuroNauta Timer</title>
+    <!-- Ícone para adicionar à tela inicial (Apple) -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/96/brain.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/96/brain.png">
+    
     <style>
         :root {
             --bg-color: #121212;
             --text-color: #e0e0e0;
             --focus-color: #00e676; /* Verde Neon Suave */
             --break-color: #2979ff; /* Azul Neon */
-            --danger-color: #ff1744;
+            --long-break-color: #aa00ff; /* Roxo para pausa longa */
             --card-bg: #1e1e1e;
         }
 
@@ -27,6 +31,25 @@
             padding: 20px;
             box-sizing: border-box;
             transition: background 0.5s;
+            -webkit-user-select: none; /* Impede seleção de texto no celular */
+            user-select: none;
+        }
+
+        /* Ciclos (Contador) */
+        .cycle-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #888;
+            border: 1px solid #333;
+        }
+        .cycle-highlight {
+            color: var(--focus-color);
         }
 
         /* Container Principal */
@@ -35,6 +58,7 @@
             width: 300px;
             height: 300px;
             margin-bottom: 30px;
+            margin-top: 20px;
         }
 
         /* SVG do Círculo */
@@ -71,7 +95,7 @@
         .time-text {
             font-size: 3.5rem;
             font-weight: bold;
-            font-variant-numeric: tabular-nums; /* Evita que os números pulem */
+            font-variant-numeric: tabular-nums;
         }
 
         .status-text {
@@ -96,8 +120,9 @@
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
+            transition: transform 0.1s;
             color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
         button:active {
@@ -107,7 +132,7 @@
         .btn-main {
             background-color: var(--text-color);
             color: var(--bg-color);
-            min-width: 120px;
+            min-width: 140px;
         }
 
         .btn-reset {
@@ -115,7 +140,7 @@
             color: #fff;
         }
 
-        /* Presets (Os botões de "modos") */
+        /* Presets */
         .presets {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -126,13 +151,15 @@
 
         .preset-btn {
             background-color: var(--card-bg);
-            padding: 15px 10px;
+            padding: 15px 5px;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #888;
+            box-shadow: none;
+            border: 1px solid transparent;
         }
 
         .preset-btn span {
@@ -143,23 +170,28 @@
         }
 
         .preset-btn.active {
-            border: 2px solid var(--focus-color);
+            border: 1px solid var(--focus-color);
             background-color: #252525;
+            color: var(--focus-color);
         }
 
         /* Rodapé com Dica */
         .tip {
-            margin-top: 40px;
+            margin-top: 30px;
             font-size: 0.85rem;
-            color: #666;
+            color: #555;
             text-align: center;
             max-width: 300px;
             line-height: 1.4;
+            font-style: italic;
+            padding: 0 10px;
         }
 
     </style>
 </head>
 <body>
+
+    <div class="cycle-counter" id="cycleDisplay">Ciclos Hoje: <span class="cycle-highlight">0</span></div>
 
     <div class="timer-container">
         <svg>
@@ -179,61 +211,94 @@
 
     <div class="presets">
         <button class="preset-btn" onclick="setMode(10, 3, this)">
-            <span>10m</span> Partida Fria
+            <span>10/3</span> Partida Fria
         </button>
         <button class="preset-btn active" onclick="setMode(25, 5, this)">
-            <span>25m</span> Pomodoro
+            <span>25/5</span> Pomodoro
         </button>
-        <button class="preset-btn" onclick="setMode(50, 10, this)">
-            <span>50m</span> Hiperfoco
+        <button class="preset-btn" onclick="setMode(50, 15, this)">
+            <span>50/15</span> Hiperfoco
         </button>
     </div>
 
     <div class="tip" id="tipText">
-        "A motivação segue a ação. Comece pequeno."
+        "Não pense. Apenas aperte o botão iniciar."
     </div>
 
-    <audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
     <script>
-        // Configurações Iniciais
+        // --- Variáveis de Estado ---
         let focusTime = 25 * 60;
         let breakTime = 5 * 60;
         let currentTime = focusTime;
-        let isFocusMode = true;
+        let totalTimeInitial = focusTime;
+        
+        let isFocusMode = true; // true = Foco, false = Pausa
         let isRunning = false;
         let interval = null;
-        let totalTimeInitial = focusTime; // Para calcular o progresso do círculo
+        let cyclesCompleted = 0;
 
-        // Elementos do DOM
+        // --- Elementos ---
         const display = document.getElementById('timeLeft');
         const statusText = document.getElementById('statusText');
         const circle = document.querySelector('.circle-progress');
         const startBtn = document.getElementById('startBtn');
         const tipText = document.getElementById('tipText');
-        const alarm = document.getElementById('alarmSound');
-        
-        // Configuração do Círculo (Circunferência)
+        const cycleDisplay = document.querySelector('#cycleDisplay span');
+        const root = document.documentElement;
+
+        // Configuração do SVG
         const radius = circle.r.baseVal.value;
         const circumference = radius * 2 * Math.PI;
         circle.style.strokeDasharray = `${circumference} ${circumference}`;
-        circle.style.strokeDashoffset = circumference;
+        circle.style.strokeDashoffset = 0; // Começa cheio
 
-        // Dicas Aleatórias TDAH
-        const tips = [
-            "Não confie no seu cérebro para marcar o tempo.",
-            "Feito é melhor que perfeito.",
-            "Se travou, levante e beba água.",
-            "Divida a tarefa em passos ridículos de pequenos.",
-            "O botão de parar é seu amigo. Respeite a pausa."
-        ];
+        // --- Sons (Oscilador do Navegador - Não precisa de arquivo externo) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playBeep(type) {
+            // type: 'start', 'end', 'tick'
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'end') {
+                // Som de sucesso/fim (agudo e duplo)
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(500, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.5);
+                // Vibrar celular
+                if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            } else {
+                // Clique suave
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // --- Funções Principais ---
 
         function updateDisplay(time) {
             const minutes = Math.floor(time / 60);
             const seconds = time % 60;
             display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            // Atualiza o círculo visualmente
+            // Título da aba (para ver no PC)
+            document.title = `(${minutes}:${seconds.toString().padStart(2, '0')}) NeuroNauta`;
+
+            // Círculo
+            // Se estiver em pausa, o círculo enche. Se foco, esvazia (opcional, aqui ambos esvaziam)
             const offset = circumference - (time / totalTimeInitial) * circumference;
             circle.style.strokeDashoffset = offset;
         }
@@ -247,26 +312,22 @@
         }
 
         async function startTimer() {
-            // Tenta manter a tela ligada (Wake Lock API)
-            try {
-                if ('wakeLock' in navigator) {
-                    await navigator.wakeLock.request('screen');
-                }
-            } catch (err) {
-                console.log('Wake Lock não suportado');
-            }
+            // Tenta Wake Lock (Manter tela ligada)
+            try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
 
             isRunning = true;
             startBtn.textContent = "Pausar";
-            startBtn.style.backgroundColor = "#fff";
+            startBtn.style.backgroundColor = "#fff"; // Cor neutra ao rodar
             startBtn.style.color = "#000";
+            
+            playBeep('start');
 
             interval = setInterval(() => {
                 if (currentTime > 0) {
                     currentTime--;
                     updateDisplay(currentTime);
                 } else {
-                    switchMode();
+                    completeCycle();
                 }
             }, 1000);
         }
@@ -275,65 +336,102 @@
             isRunning = false;
             clearInterval(interval);
             startBtn.textContent = "Continuar";
-            startBtn.style.backgroundColor = isFocusMode ? "var(--focus-color)" : "var(--break-color)";
+            // Retorna cor do botão para a cor do modo atual
+            updateThemeColors();
         }
 
         function resetTimer() {
             pauseTimer();
             startBtn.textContent = "Iniciar";
-            startBtn.style.backgroundColor = "var(--text-color)";
-            currentTime = isFocusMode ? focusTime : breakTime;
-            totalTimeInitial = currentTime; // Reseta o total para o círculo encher
-            updateDisplay(currentTime);
-            circle.style.strokeDashoffset = 0; // Círculo cheio
-        }
-
-        function switchMode() {
-            alarm.play(); // Toca o som
-            
-            // Troca de Foco para Pausa e vice-versa
-            isFocusMode = !isFocusMode;
+            // Reinicia o tempo para o padrão do modo atual
             currentTime = isFocusMode ? focusTime : breakTime;
             totalTimeInitial = currentTime;
-            
-            // Atualiza Cores e Textos
-            const color = isFocusMode ? "var(--focus-color)" : "var(--break-color)";
-            document.documentElement.style.setProperty('--focus-color', color);
-            circle.style.stroke = color;
-            statusText.textContent = isFocusMode ? "Foco" : "Pausa - Saia da Tela";
-            
-            // Troca a dica aleatória
-            tipText.textContent = tips[Math.floor(Math.random() * tips.length)];
-
-            // Vibração do celular (feedback tátil)
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-
             updateDisplay(currentTime);
-            pauseTimer(); // Pausa automaticamente para o usuário decidir quando começar a próxima fase
-            startBtn.textContent = "Começar " + (isFocusMode ? "Foco" : "Pausa");
+            circle.style.strokeDashoffset = 0; // Reseta círculo cheio
+            updateThemeColors();
         }
 
-        function setMode(focus, breakT, btnElement) {
-            // Atualiza tempos
-            focusTime = focus * 60;
-            breakTime = breakT * 60;
+        function completeCycle() {
+            pauseTimer(); // Para o timer no 00:00
+            playBeep('end');
+
+            if (isFocusMode) {
+                // FIM DO FOCO -> VAI PARA PAUSA
+                cyclesCompleted++;
+                cycleDisplay.textContent = cyclesCompleted;
+                
+                // Sugestão de Pausa Longa após 4 ciclos
+                if (cyclesCompleted % 4 === 0) {
+                    statusText.textContent = "Pausa Longa Recomendada";
+                    breakTime = 15 * 60; // 15 min temporários
+                    tipText.textContent = "Você completou 4 ciclos! Tire um descanso maior.";
+                    root.style.setProperty('--break-color', 'var(--long-break-color)');
+                } else {
+                    statusText.textContent = "Pausa - Respire";
+                    tipText.textContent = "Saia da tela. Alongue-se. Beba água.";
+                }
+
+                isFocusMode = false;
+                startBtn.textContent = "Iniciar Pausa";
             
-            // Reseta visual dos botões
+            } else {
+                // FIM DA PAUSA -> VAI PARA FOCO
+                isFocusMode = true;
+                statusText.textContent = "Foco";
+                tipText.textContent = "Pronto para voltar? Apenas comece.";
+                
+                // Restaura tempo de pausa padrão caso tenha sido longa
+                const activeBtn = document.querySelector('.preset-btn.active span');
+                // Gambiarra inteligente para pegar o tempo original do botão ativo
+                if(activeBtn) {
+                     // Recupera valor original do botão (ex: '25/5' -> pega o 5)
+                     const breakVal = parseInt(activeBtn.innerText.split('/')[1]);
+                     breakTime = breakVal * 60;
+                }
+
+                startBtn.textContent = "Iniciar Foco";
+            }
+
+            // Prepara o próximo timer
+            currentTime = isFocusMode ? focusTime : breakTime;
+            totalTimeInitial = currentTime;
+            updateDisplay(currentTime);
+            circle.style.strokeDashoffset = 0;
+            updateThemeColors();
+        }
+
+        function updateThemeColors() {
+            const color = isFocusMode ? "var(--focus-color)" : (cyclesCompleted > 0 && cyclesCompleted % 4 === 0 && !isFocusMode ? "var(--long-break-color)" : "var(--break-color)");
+            
+            root.style.setProperty('--current-color', color);
+            circle.style.stroke = color;
+            
+            // Se não estiver rodando, o botão assume a cor do modo
+            if (!isRunning) {
+                startBtn.style.backgroundColor = color;
+                startBtn.style.color = "#fff";
+            }
+        }
+
+        function setMode(focusMin, breakMin, btn) {
+            // Atualiza configurações globais
+            focusTime = focusMin * 60;
+            breakTime = breakMin * 60;
+            
+            // Atualiza UI dos botões
             document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-            
-            // Força reset para modo Foco
+            btn.classList.add('active');
+
+            // Se trocar de modo, forçamos o reset para o início de um Foco
             isFocusMode = true;
             statusText.textContent = "Foco";
-            document.documentElement.style.setProperty('--focus-color', '#00e676');
-            circle.style.stroke = '#00e676';
+            tipText.textContent = "Modo alterado. Pronto?";
             
             resetTimer();
         }
 
         // Inicialização
-        resetTimer();
-        circle.style.strokeDashoffset = 0; // Garante que comece cheio
+        updateThemeColors();
     </script>
 </body>
 </html>
