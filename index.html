@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <title>NeuroNauta Sonic</title>
+    <title>NeuroNauta Timekeeper</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/brain.png">
@@ -49,8 +49,7 @@
 
         /* --- UI Elements --- */
         #installBtn {
-            display: none;
-            position: fixed; top: 20px; left: 20px;
+            display: none; position: fixed; top: 20px; left: 20px;
             background: var(--focus-color); color: #000;
             border: none; padding: 8px 15px; border-radius: 20px;
             font-weight: bold; font-size: 0.8rem; cursor: pointer; z-index: 1000;
@@ -69,9 +68,7 @@
         .dot.completed { background-color: var(--current-color); box-shadow: 0 0 10px var(--current-glow); }
         .dot.active { background-color: #fff; transform: scale(1.5); box-shadow: 0 0 15px rgba(255,255,255,0.5); }
 
-        .timer-wrapper {
-            position: relative; width: 260px; height: 260px; margin-bottom: 30px;
-        }
+        .timer-wrapper { position: relative; width: 260px; height: 260px; margin-bottom: 30px; }
 
         .breathing { animation: breathe 4s infinite ease-in-out; }
         @keyframes breathe {
@@ -80,7 +77,7 @@
         }
 
         svg { transform: rotate(-90deg); width: 100%; height: 100%; overflow: visible; }
-        circle { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.5s; }
+        circle { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.1s linear, stroke 0.5s; }
         .circle-bg { stroke: #1e293b; }
         .circle-progress { stroke: var(--current-color); filter: drop-shadow(0 0 8px var(--current-glow)); }
 
@@ -101,7 +98,7 @@
         .main-btn:active { transform: scale(0.95); }
         .main-btn.running { background: var(--current-color); color: var(--bg-color); box-shadow: 0 0 30px var(--current-glow); border-color: transparent; }
 
-        /* --- Sound Panel --- */
+        /* Sound Panel */
         .sound-panel {
             width: 100%; max-width: 340px; background: #182030;
             border-radius: 16px; padding: 15px; margin-bottom: 20px;
@@ -109,18 +106,13 @@
         }
         .sound-header { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; }
         .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-        
         .sound-btn {
             background: #0f172a; border: 1px solid #334155; color: #64748b;
             padding: 8px; border-radius: 8px; font-size: 0.7rem; cursor: pointer;
             transition: all 0.2s; display: flex; flex-direction: column; align-items: center;
         }
-        .sound-btn.active {
-            border-color: var(--focus-color); color: var(--focus-color); background: rgba(0, 255, 157, 0.05);
-        }
-        .sound-group-label {
-            font-size: 0.7rem; color: #fff; grid-column: span 3; margin-top: 5px; margin-bottom: 2px;
-        }
+        .sound-btn.active { border-color: var(--focus-color); color: var(--focus-color); background: rgba(0, 255, 157, 0.05); }
+        .sound-group-label { font-size: 0.7rem; color: #fff; grid-column: span 3; margin-top: 5px; margin-bottom: 2px; }
 
         .presets-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; width: 100%; max-width: 340px; }
         .mode-card { background: var(--card-bg); border: 1px solid transparent; padding: 12px 10px; border-radius: 16px; cursor: pointer; text-align: center; opacity: 0.6; transition: all 0.2s; }
@@ -159,21 +151,19 @@
 
     <button class="main-btn" id="mainBtn" onclick="toggleTimer()">INICIAR</button>
 
-    <!-- Painel de Ruído -->
     <div class="sound-panel">
         <div class="sound-header">
-            <span>Ruído Neural</span>
-            <span id="soundStatus">Desligado</span>
+            <span>Ruído Neural</span> <span id="soundStatus">Desligado</span>
         </div>
         
-        <div class="sound-group-label">Brown (Profundo/Trovão)</div>
+        <div class="sound-group-label">Brown (Profundo)</div>
         <div class="sound-grid">
             <button class="sound-btn" onclick="setNoise('brown', 0, this)">Padrão</button>
             <button class="sound-btn" onclick="setNoise('brown', 1, this)">Profundo</button>
             <button class="sound-btn" onclick="setNoise('brown', 2, this)">Leve</button>
         </div>
 
-        <div class="sound-group-label">Pink (Chuva/Cachoeira)</div>
+        <div class="sound-group-label">Pink (Chuva)</div>
         <div class="sound-grid">
             <button class="sound-btn" onclick="setNoise('pink', 0, this)">Padrão</button>
             <button class="sound-btn" onclick="setNoise('pink', 1, this)">Suave</button>
@@ -191,7 +181,7 @@
         <div class="mode-card" onclick="setMode('hyper', this)"><strong>50</strong><span>Hiperfoco</span></div>
     </div>
 
-    <div class="dnd-alert" id="dndAlert">⚠️ Ative o "Não Perturbe" agora!</div>
+    <div class="dnd-alert" id="dndAlert">⚠️ Ative o "Não Perturbe"</div>
 
     <script>
         // --- PWA SETUP ---
@@ -201,46 +191,30 @@
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'block'; });
         installBtn.addEventListener('click', () => { installBtn.style.display = 'none'; deferredPrompt.prompt(); });
 
-        // --- AUDIO ENGINE (NOISE GENERATOR) ---
-        let audioCtx;
-        let noiseSource;
-        let gainNode;
-        let filterNode;
-        let currentNoiseType = 'off'; // 'brown' or 'pink' or 'off'
-        let currentVariant = 0; // 0=Std, 1=Deep/Soft, 2=Light/Bright
+        // --- AUDIO ENGINE ---
+        let audioCtx, noiseSource, gainNode, filterNode;
+        let currentNoiseType = 'off', currentVariant = 0;
 
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
         function createNoiseBuffer(type) {
-            const bufferSize = audioCtx.sampleRate * 2; // 2 seconds buffer
+            const bufferSize = audioCtx.sampleRate * 2;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
-
             if (type === 'pink') {
-                // Pink Noise Algorithm (Paul Kellet)
-                let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0;
-                for (let i = 0; i < bufferSize; i++) {
-                    const white = Math.random() * 2 - 1;
-                    b0 = 0.99886 * b0 + white * 0.0555179;
-                    b1 = 0.99332 * b1 + white * 0.0750759;
-                    b2 = 0.96900 * b2 + white * 0.1538520;
-                    b3 = 0.86650 * b3 + white * 0.3104856;
-                    b4 = 0.55000 * b4 + white * 0.5329522;
-                    b5 = -0.7616 * b5 - white * 0.0168980;
-                    data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-                    data[i] *= 0.11; 
-                    b6 = white * 0.115926;
+                let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+                for (let i=0; i<bufferSize; i++) {
+                    const white = Math.random()*2-1;
+                    b0 = 0.99886*b0 + white*0.0555179; b1 = 0.99332*b1 + white*0.0750759;
+                    b2 = 0.96900*b2 + white*0.1538520; b3 = 0.86650*b3 + white*0.3104856;
+                    b4 = 0.55000*b4 + white*0.5329522; b5 = -0.7616*b5 - white*0.0168980;
+                    data[i] = (b0+b1+b2+b3+b4+b5+b6+white*0.5362)*0.11; b6 = white*0.115926;
                 }
             } else {
-                // Brown Noise Algorithm
-                let lastOut = 0;
-                for (let i = 0; i < bufferSize; i++) {
-                    const white = Math.random() * 2 - 1;
-                    data[i] = (lastOut + (0.02 * white)) / 1.02;
-                    lastOut = data[i];
-                    data[i] *= 3.5; 
+                let lastOut=0;
+                for (let i=0; i<bufferSize; i++) {
+                    const white = Math.random()*2-1;
+                    data[i] = (lastOut + (0.02*white)) / 1.02; lastOut = data[i]; data[i] *= 3.5;
                 }
             }
             return buffer;
@@ -248,81 +222,46 @@
 
         function playNoise() {
             if (currentNoiseType === 'off') return;
-            initAudio();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // Stop previous
+            initAudio(); if (audioCtx.state === 'suspended') audioCtx.resume();
             stopNoise();
-
-            // Create nodes
             noiseSource = audioCtx.createBufferSource();
             noiseSource.buffer = createNoiseBuffer(currentNoiseType);
             noiseSource.loop = true;
-
             gainNode = audioCtx.createGain();
             filterNode = audioCtx.createBiquadFilter();
 
-            // Apply Variants via Filters
             if (currentNoiseType === 'brown') {
-                if (currentVariant === 1) { // Deep
-                    filterNode.type = 'lowpass'; filterNode.frequency.value = 200;
-                } else if (currentVariant === 2) { // Light
-                    filterNode.type = 'highpass'; filterNode.frequency.value = 100;
-                } else { // Standard
-                    filterNode.type = 'allpass';
-                }
+                if (currentVariant === 1) { filterNode.type = 'lowpass'; filterNode.frequency.value = 200; }
+                else if (currentVariant === 2) { filterNode.type = 'highpass'; filterNode.frequency.value = 100; }
             } else if (currentNoiseType === 'pink') {
-                if (currentVariant === 1) { // Soft
-                    filterNode.type = 'lowpass'; filterNode.frequency.value = 500;
-                } else if (currentVariant === 2) { // Bright
-                    filterNode.type = 'highpass'; filterNode.frequency.value = 800;
-                } else {
-                    filterNode.type = 'allpass';
-                }
+                if (currentVariant === 1) { filterNode.type = 'lowpass'; filterNode.frequency.value = 500; }
+                else if (currentVariant === 2) { filterNode.type = 'highpass'; filterNode.frequency.value = 800; }
             }
-
-            // Connect graph
-            noiseSource.connect(filterNode);
-            filterNode.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            // Fade In
+            noiseSource.connect(filterNode); filterNode.connect(gainNode); gainNode.connect(audioCtx.destination);
             gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 2); // 2s fade in
-
+            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 2);
             noiseSource.start();
         }
 
         function stopNoise() {
             if (gainNode) {
-                // Fade out
                 try {
                     gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-                    setTimeout(() => {
-                        if (noiseSource) { noiseSource.stop(); noiseSource.disconnect(); }
-                    }, 500);
+                    setTimeout(() => { if (noiseSource) { noiseSource.stop(); noiseSource.disconnect(); } }, 500);
                 } catch(e) {}
             }
         }
 
         function setNoise(type, variant, btn) {
-            currentNoiseType = type;
-            currentVariant = variant;
-            
-            // UI Update
+            currentNoiseType = type; currentVariant = variant;
             document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
             if (type !== 'off') btn.classList.add('active');
-            
-            const variantNames = ['Padrão', 'Deep/Soft', 'Light/Bright'];
-            document.getElementById('soundStatus').textContent = type === 'off' ? 'Desligado' : `${type.toUpperCase()} (${variantNames[variant]})`;
-
-            // Se o timer estiver rodando e em Foco, troca o som em tempo real
-            if (isRunning && isFocus) {
-                playNoise();
-            }
+            const n = ['Padrão','Deep/Soft','Light/Bright'];
+            document.getElementById('soundStatus').textContent = type === 'off' ? 'Desligado' : `${type.toUpperCase()} (${n[variant]})`;
+            if (isRunning && isFocus) playNoise();
         }
 
-        // --- TIMER LOGIC ---
+        // --- TIMER ENGINE V6 (Timestamp Precision) ---
         const MODES = {
             coldStart: { focus: 10, shortBreak: 3, longBreak: 15, cyclesForLong: 4, desc: "Aquecimento rápido." },
             pomodoro: { focus: 25, shortBreak: 5, longBreak: 20, cyclesForLong: 4, desc: "Resistência padrão." },
@@ -330,12 +269,16 @@
         };
 
         let currentMode = 'pomodoro';
-        let timeLeft = MODES.pomodoro.focus * 60;
-        let totalTime = timeLeft;
+        let defaultTime = MODES.pomodoro.focus * 60;
+        let totalTime = defaultTime;
+        
+        let endTime = 0;
+        let remainingTime = defaultTime;
         let isRunning = false;
         let isFocus = true;
         let currentCycle = 1;
         let timerInterval = null;
+        let wakeLock = null;
 
         const displayEl = document.getElementById('display');
         const statusEl = document.getElementById('status');
@@ -346,14 +289,12 @@
         const root = document.documentElement;
         const dndAlert = document.getElementById('dndAlert');
 
+        // Audio Beep
         function playBeep(type) {
             initAudio();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
-            
             if (type === 'end') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.exponentialRampToValueAtTime(880, now+0.1);
                 gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.001, now+1.5);
@@ -365,7 +306,23 @@
             }
         }
 
-        function init() { renderDots(); updateDisplay(); updateTheme(); }
+        // Wake Lock Manager
+        async function requestWakeLock() {
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+        }
+
+        // Visibility Handler (Corrigir tempo ao voltar pro app)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                if (isRunning) {
+                    tick(); // Força atualização imediata
+                    requestWakeLock(); // Re-solicita tela ligada
+                    if(isFocus) playNoise(); // Tenta retomar som
+                }
+            }
+        });
+
+        function init() { renderDots(); updateDisplay(remainingTime); updateTheme(); }
 
         function updateTheme() {
             let colorVar, glowVar;
@@ -399,41 +356,57 @@
         }
 
         function fullReset() {
-            isRunning = false; clearInterval(timerInterval); currentCycle = 1; isFocus = true;
-            stopNoise();
-            prepareTimerState(); renderDots(); btnEl.textContent = "INICIAR";
-            btnEl.classList.remove('running'); wrapperEl.classList.remove('breathing');
+            isRunning = false; clearInterval(timerInterval); 
+            currentCycle = 1; isFocus = true; stopNoise();
+            
+            // Set initial times
+            const config = MODES[currentMode];
+            defaultTime = config.focus * 60;
+            remainingTime = defaultTime;
+            totalTime = defaultTime;
+
+            prepareTimerState(); renderDots(); 
+            btnEl.textContent = "INICIAR"; btnEl.classList.remove('running'); wrapperEl.classList.remove('breathing');
         }
 
         function prepareTimerState() {
             const config = MODES[currentMode];
-            if (isFocus) { timeLeft = config.focus * 60; statusEl.textContent = "FOCO"; } 
-            else { timeLeft = (currentCycle > config.cyclesForLong) ? config.longBreak*60 : config.shortBreak*60; statusEl.textContent = (currentCycle > config.cyclesForLong) ? "DESCANSÃO" : "PAUSA"; }
-            totalTime = timeLeft; updateTheme(); updateDisplay(); circleEl.style.strokeDashoffset = "0";
+            if (isFocus) { 
+                defaultTime = config.focus * 60; 
+                statusEl.textContent = "FOCO"; 
+            } else { 
+                defaultTime = (currentCycle > config.cyclesForLong) ? config.longBreak*60 : config.shortBreak*60; 
+                statusEl.textContent = (currentCycle > config.cyclesForLong) ? "DESCANSÃO" : "PAUSA"; 
+            }
+            remainingTime = defaultTime;
+            totalTime = defaultTime;
+            updateTheme(); updateDisplay(remainingTime); circleEl.style.strokeDashoffset = "0";
         }
 
         function toggleTimer() {
-            initAudio();
-            playBeep('click');
+            initAudio(); playBeep('click');
             
             if (isRunning) {
-                // PAUSE
+                // PAUSING
                 clearInterval(timerInterval); isRunning = false; 
+                // Salva quanto tempo faltava
+                const now = Date.now();
+                remainingTime = Math.ceil((endTime - now) / 1000);
+                
                 btnEl.textContent = "CONTINUAR"; btnEl.classList.remove('running'); 
-                wrapperEl.classList.remove('breathing');
-                stopNoise(); // Para o ruído na pausa
+                wrapperEl.classList.remove('breathing'); stopNoise();
             } else {
-                // START
-                if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
-                timerInterval = setInterval(tick, 1000); isRunning = true; 
+                // STARTING / RESUMING
+                requestWakeLock();
+                // Calcula o horário futuro de término
+                endTime = Date.now() + (remainingTime * 1000);
+                
+                timerInterval = setInterval(tick, 200); // Check 5x per second
+                isRunning = true; 
                 btnEl.textContent = "PAUSAR"; btnEl.classList.add('running'); 
                 wrapperEl.classList.add('breathing');
                 
-                // Se for tempo de foco, toca o ruído
-                if (isFocus) {
-                    playNoise();
-                    showDNDAlert(); // Mostra aviso de Não Perturbe
-                }
+                if (isFocus) { playNoise(); showDNDAlert(); }
             }
         }
 
@@ -442,12 +415,26 @@
             setTimeout(() => { dndAlert.classList.remove('show'); }, 5000);
         }
 
-        function tick() { if (timeLeft > 0) { timeLeft--; updateDisplay(); } else { finishBlock(); } }
+        function tick() {
+            const now = Date.now();
+            const delta = endTime - now;
+            
+            if (delta <= 0) {
+                remainingTime = 0;
+                updateDisplay(0);
+                finishBlock();
+            } else {
+                remainingTime = Math.ceil(delta / 1000);
+                updateDisplay(remainingTime);
+            }
+        }
 
-        function updateDisplay() {
-            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0'); const s = (timeLeft % 60).toString().padStart(2, '0');
+        function updateDisplay(secs) {
+            const m = Math.floor(secs / 60).toString().padStart(2, '0'); 
+            const s = (secs % 60).toString().padStart(2, '0');
             displayEl.textContent = `${m}:${s}`; document.title = `(${m}:${s}) NeuroNauta`;
-            const percent = (timeLeft / totalTime) * 100; circleEl.style.strokeDashoffset = 100 - percent;
+            const percent = (secs / totalTime) * 100; 
+            circleEl.style.strokeDashoffset = 100 - percent;
         }
 
         function finishBlock() {
