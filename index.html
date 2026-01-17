@@ -4,33 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <title>NeuroNauta Glow</title>
-    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/96/brain.png">
-    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/96/brain.png">
+    <title>NeuroNauta</title>
     
-    <!-- Fonte Monoespaçada Moderna -->
+    <!-- Conexão PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/brain.png">
+    
+    <!-- Fonte -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* Paleta Dark Mode Profunda */
-            --bg-color: #0f172a; /* Slate 900 */
-            --card-bg: #1e293b;  /* Slate 800 */
+            --bg-color: #0f172a; 
+            --card-bg: #1e293b;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            
-            /* Cores Neon com Glow */
             --focus-color: #00ff9d;
             --focus-glow: rgba(0, 255, 157, 0.4);
-            
             --break-color: #3b82f6;
             --break-glow: rgba(59, 130, 246, 0.4);
-            
             --long-break-color: #d946ef;
             --long-break-glow: rgba(217, 70, 239, 0.4);
-
             --current-color: var(--focus-color);
             --current-glow: var(--focus-glow);
         }
@@ -38,7 +33,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'JetBrains Mono', monospace; /* Fonte técnica e limpa */
+            font-family: 'JetBrains Mono', monospace;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
@@ -49,10 +44,28 @@
             margin: 0;
             padding: 20px;
             overflow: hidden;
-            transition: background-color 0.5s ease;
+            transition: background 0.5s ease;
+            user-select: none;
         }
 
-        /* --- Barra de Progresso (Bolinhas) --- */
+        /* Install Button (Customizado para aparecer se o navegador deixar) */
+        #installBtn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--focus-color);
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 0 10px var(--focus-glow);
+        }
+
         .session-progress {
             display: flex;
             gap: 12px;
@@ -68,44 +81,27 @@
             height: 10px;
             border-radius: 50%;
             background-color: #334155;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.4s;
         }
         
-        .dot.completed { 
-            background-color: var(--current-color); 
-            box-shadow: 0 0 10px var(--current-glow);
-        }
-        
-        .dot.active { 
-            background-color: #fff; 
-            transform: scale(1.5);
-            box-shadow: 0 0 15px rgba(255,255,255,0.5);
-        }
+        .dot.completed { background-color: var(--current-color); box-shadow: 0 0 10px var(--current-glow); }
+        .dot.active { background-color: #fff; transform: scale(1.5); box-shadow: 0 0 15px rgba(255,255,255,0.5); }
 
-        /* --- Timer Visual --- */
         .timer-wrapper {
             position: relative;
             width: 280px;
             height: 280px;
             margin-bottom: 40px;
-            /* Efeito de respiração quando ativo */
         }
 
-        .breathing {
-            animation: breathe 4s infinite ease-in-out;
-        }
+        .breathing { animation: breathe 4s infinite ease-in-out; }
 
         @keyframes breathe {
             0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px var(--current-glow)); }
             50% { transform: scale(1.02); filter: drop-shadow(0 0 30px var(--current-glow)); }
         }
 
-        svg {
-            transform: rotate(-90deg);
-            width: 100%;
-            height: 100%;
-            overflow: visible; /* Permite que o glow saia da borda */
-        }
+        svg { transform: rotate(-90deg); width: 100%; height: 100%; overflow: visible; }
 
         circle {
             fill: none;
@@ -114,26 +110,15 @@
             transition: stroke-dashoffset 1s linear, stroke 0.5s;
         }
 
-        .circle-bg { 
-            stroke: #1e293b; 
-            stroke-width: 8;
-        }
-        
-        .circle-progress { 
-            stroke: var(--current-color);
-            filter: drop-shadow(0 0 8px var(--current-glow)); /* O segredo do Neon */
-        }
+        .circle-bg { stroke: #1e293b; }
+        .circle-progress { stroke: var(--current-color); filter: drop-shadow(0 0 8px var(--current-glow)); }
 
-        /* Display Digital */
         .digital-display {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         .time-text {
@@ -156,7 +141,6 @@
             font-weight: bold;
         }
 
-        /* --- Botão Principal (Vidro) --- */
         .main-btn {
             background: rgba(255, 255, 255, 0.05);
             color: var(--current-color);
@@ -169,16 +153,11 @@
             font-family: 'JetBrains Mono', monospace;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 0 20px transparent;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 40px;
-            position: relative;
-            overflow: hidden;
         }
-
         .main-btn:active { transform: scale(0.95); }
-
         .main-btn.running {
             background: var(--current-color);
             color: var(--bg-color);
@@ -186,7 +165,6 @@
             border-color: transparent;
         }
 
-        /* --- Botões de Modo (Presets) --- */
         .presets-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -202,117 +180,88 @@
             border-radius: 16px;
             cursor: pointer;
             text-align: center;
-            transition: all 0.2s;
             opacity: 0.6;
+            transition: all 0.2s;
         }
-
-        .mode-card strong {
-            display: block;
-            font-size: 1.4rem;
-            margin-bottom: 4px;
-            color: var(--text-main);
-        }
-
-        .mode-card span {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-
+        .mode-card strong { display: block; font-size: 1.4rem; margin-bottom: 4px; }
+        .mode-card span { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); }
         .mode-card.active {
             opacity: 1;
             background: rgba(255,255,255,0.03);
             border-color: var(--current-color);
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        
         .mode-card.active strong { color: var(--current-color); }
 
-        /* Rodapé */
-        .tip-text {
-            margin-top: 30px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-align: center;
-            opacity: 0.5;
-            max-width: 250px;
-        }
-        
-        .reset-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            opacity: 0.3;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
+        .tip-text { margin-top: 30px; font-size: 0.75rem; color: var(--text-muted); text-align: center; opacity: 0.5; }
+        .reset-btn { position: fixed; top: 20px; right: 20px; background: none; border: none; color: var(--text-muted); opacity: 0.3; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-    <!-- Botão Reset Discreto -->
-    <button class="reset-btn" onclick="fullReset()" title="Resetar Sessão">↺</button>
-
-    <!-- Bolinhas de Progresso -->
+    <button id="installBtn">📲 Instalar App</button>
+    <button class="reset-btn" onclick="fullReset()" title="Resetar">↺</button>
     <div class="session-progress" id="progressDots"></div>
 
-    <!-- Timer com Glow -->
     <div class="timer-wrapper" id="timerWrapper">
         <svg viewBox="0 0 100 100">
-            <!-- Círculo de Fundo -->
             <circle class="circle-bg" cx="50" cy="50" r="45"></circle>
-            <!-- Círculo de Progresso -->
             <circle class="circle-progress" cx="50" cy="50" r="45" pathLength="100"></circle>
         </svg>
-        
         <div class="digital-display">
             <div class="time-text" id="display">25:00</div>
             <div class="status-badge" id="status">Foco</div>
         </div>
     </div>
 
-    <!-- Botão de Ação -->
     <button class="main-btn" id="mainBtn" onclick="toggleTimer()">INICIAR</button>
 
-    <!-- Seleção de Modos -->
     <div class="presets-grid">
         <div class="mode-card" onclick="setMode('coldStart', this)">
-            <strong>10</strong>
-            <span>Partida Fria</span>
+            <strong>10</strong><span>Partida Fria</span>
         </div>
         <div class="mode-card active" onclick="setMode('pomodoro', this)">
-            <strong>25</strong>
-            <span>Clássico</span>
+            <strong>25</strong><span>Clássico</span>
         </div>
         <div class="mode-card" onclick="setMode('hyper', this)">
-            <strong>50</strong>
-            <span>Hiperfoco</span>
+            <strong>50</strong><span>Hiperfoco</span>
         </div>
     </div>
 
-    <div class="tip-text" id="infoText">
-        4 ciclos para o descanso longo.
-    </div>
+    <div class="tip-text" id="infoText">4 ciclos para o descanso longo.</div>
 
     <script>
-        // --- Lógica Científica (Mantida da v3) ---
+        // --- PWA SERVICE WORKER REGISTRATION ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registrado!', reg))
+                    .catch(err => console.log('SW falhou', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', (e) => {
+            installBtn.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                deferredPrompt = null;
+            });
+        });
+
+        // --- LÓGICA DO TIMER (Mesma da v4) ---
         const MODES = {
-            coldStart: { 
-                focus: 10, shortBreak: 3, longBreak: 15, cyclesForLong: 4, 
-                desc: "10min é melhor que zero." 
-            },
-            pomodoro: { 
-                focus: 25, shortBreak: 5, longBreak: 20, cyclesForLong: 4, 
-                desc: "O ritmo clássico de resistência." 
-            },
-            hyper: { 
-                focus: 50, shortBreak: 10, longBreak: 30, cyclesForLong: 2, 
-                desc: "Imersão profunda. Cuidado com o burnout." 
-            }
+            coldStart: { focus: 10, shortBreak: 3, longBreak: 15, cyclesForLong: 4, desc: "10min é melhor que zero." },
+            pomodoro: { focus: 25, shortBreak: 5, longBreak: 20, cyclesForLong: 4, desc: "Ritmo clássico de resistência." },
+            hyper: { focus: 50, shortBreak: 10, longBreak: 30, cyclesForLong: 2, desc: "Imersão profunda." }
         };
 
         let currentMode = 'pomodoro';
@@ -323,7 +272,6 @@
         let currentCycle = 1;
         let timerInterval = null;
 
-        // Elementos
         const displayEl = document.getElementById('display');
         const statusEl = document.getElementById('status');
         const circleEl = document.querySelector('.circle-progress');
@@ -333,73 +281,45 @@
         const infoText = document.getElementById('infoText');
         const root = document.documentElement;
 
-        // --- Áudio WebAudio API ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             const now = audioCtx.currentTime;
-            
             if (type === 'end') {
-                // Som "Zen" de conclusão (Senoide suave)
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5); // Fade longo
-                osc.start(now);
-                osc.stop(now + 1.5);
-                if(navigator.vibrate) navigator.vibrate([50, 50, 50, 50]);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.exponentialRampToValueAtTime(880, now+0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now+1.5);
+                osc.start(now); osc.stop(now+1.5);
+                if(navigator.vibrate) navigator.vibrate([50,50,50,50]);
             } else {
-                // Clique tecnológico
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                osc.start(now);
-                osc.stop(now + 0.05);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.05);
+                osc.start(now); osc.stop(now+0.05);
             }
         }
 
-        // --- Funções Core ---
-
-        function init() {
-            renderDots();
-            updateDisplay();
-            updateTheme();
-        }
+        function init() { renderDots(); updateDisplay(); updateTheme(); }
 
         function updateTheme() {
-            // Define as cores CSS baseado no estado
             let colorVar, glowVar;
-            
-            if (isFocus) {
-                colorVar = 'var(--focus-color)';
-                glowVar = 'var(--focus-glow)';
-            } else {
-                // Verifica se é pausa longa
+            if (isFocus) { colorVar = 'var(--focus-color)'; glowVar = 'var(--focus-glow)'; } 
+            else {
                 const isLong = currentCycle > MODES[currentMode].cyclesForLong;
                 colorVar = isLong ? 'var(--long-break-color)' : 'var(--break-color)';
                 glowVar = isLong ? 'var(--long-break-glow)' : 'var(--break-glow)';
             }
-
             root.style.setProperty('--current-color', colorVar);
             root.style.setProperty('--current-glow', glowVar);
         }
 
         function renderDots() {
             dotsContainer.innerHTML = '';
-            const totalCycles = MODES[currentMode].cyclesForLong;
-            
-            for (let i = 1; i <= totalCycles; i++) {
+            for (let i = 1; i <= MODES[currentMode].cyclesForLong; i++) {
                 const dot = document.createElement('div');
                 dot.className = 'dot';
-                // Lógica visual: Completos (anteriores) ou Ativo (atual em foco)
                 if (i < currentCycle) dot.classList.add('completed');
                 if (i === currentCycle && isFocus) dot.classList.add('active');
                 dotsContainer.appendChild(dot);
@@ -407,126 +327,50 @@
         }
 
         function setMode(modeKey, card) {
-            if (isRunning) toggleTimer(); 
-            
+            if (isRunning) toggleTimer();
             currentMode = modeKey;
-            
             document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             infoText.textContent = MODES[modeKey].desc;
-            
             fullReset();
         }
 
         function fullReset() {
-            isRunning = false;
-            clearInterval(timerInterval);
-            currentCycle = 1;
-            isFocus = true;
-            prepareTimerState();
-            renderDots();
-            btnEl.textContent = "INICIAR";
-            btnEl.classList.remove('running');
-            wrapperEl.classList.remove('breathing');
+            isRunning = false; clearInterval(timerInterval); currentCycle = 1; isFocus = true;
+            prepareTimerState(); renderDots(); btnEl.textContent = "INICIAR";
+            btnEl.classList.remove('running'); wrapperEl.classList.remove('breathing');
         }
 
         function prepareTimerState() {
             const config = MODES[currentMode];
-            
-            if (isFocus) {
-                timeLeft = config.focus * 60;
-                statusEl.textContent = "FOCO";
-            } else {
-                if (currentCycle > config.cyclesForLong) {
-                    timeLeft = config.longBreak * 60;
-                    statusEl.textContent = "DESCANSÃO";
-                } else {
-                    timeLeft = config.shortBreak * 60;
-                    statusEl.textContent = "PAUSA";
-                }
-            }
-            totalTime = timeLeft;
-            updateTheme();
-            updateDisplay();
-            circleEl.style.strokeDashoffset = "0";
+            if (isFocus) { timeLeft = config.focus * 60; statusEl.textContent = "FOCO"; } 
+            else { timeLeft = (currentCycle > config.cyclesForLong) ? config.longBreak*60 : config.shortBreak*60; statusEl.textContent = (currentCycle > config.cyclesForLong) ? "DESCANSÃO" : "PAUSA"; }
+            totalTime = timeLeft; updateTheme(); updateDisplay(); circleEl.style.strokeDashoffset = "0";
         }
 
         function toggleTimer() {
             playSound('click');
-            if (isRunning) {
-                clearInterval(timerInterval);
-                isRunning = false;
-                btnEl.textContent = "CONTINUAR";
-                btnEl.classList.remove('running');
-                wrapperEl.classList.remove('breathing'); // Para de respirar
-            } else {
-                if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
-                timerInterval = setInterval(tick, 1000);
-                isRunning = true;
-                btnEl.textContent = "PAUSAR";
-                btnEl.classList.add('running');
-                wrapperEl.classList.add('breathing'); // Começa a respirar
-            }
+            if (isRunning) { clearInterval(timerInterval); isRunning = false; btnEl.textContent = "CONTINUAR"; btnEl.classList.remove('running'); wrapperEl.classList.remove('breathing'); } 
+            else { if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{}); timerInterval = setInterval(tick, 1000); isRunning = true; btnEl.textContent = "PAUSAR"; btnEl.classList.add('running'); wrapperEl.classList.add('breathing'); }
         }
 
-        function tick() {
-            if (timeLeft > 0) {
-                timeLeft--;
-                updateDisplay();
-            } else {
-                finishBlock();
-            }
-        }
+        function tick() { if (timeLeft > 0) { timeLeft--; updateDisplay(); } else { finishBlock(); } }
 
         function updateDisplay() {
-            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            const s = (timeLeft % 60).toString().padStart(2, '0');
-            displayEl.textContent = `${m}:${s}`;
-            document.title = `(${m}:${s}) NeuroNauta`;
-            
-            // Cálculo do Círculo (pathLength=100)
-            const percent = (timeLeft / totalTime) * 100;
-            // O dashoffset funciona ao contrário: 0 é cheio, 100 é vazio
-            circleEl.style.strokeDashoffset = 100 - percent;
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0'); const s = (timeLeft % 60).toString().padStart(2, '0');
+            displayEl.textContent = `${m}:${s}`; document.title = `(${m}:${s}) NeuroNauta`;
+            const percent = (timeLeft / totalTime) * 100; circleEl.style.strokeDashoffset = 100 - percent;
         }
 
         function finishBlock() {
-            clearInterval(timerInterval);
-            isRunning = false;
-            playSound('end');
-            wrapperEl.classList.remove('breathing');
-            
+            clearInterval(timerInterval); isRunning = false; playSound('end'); wrapperEl.classList.remove('breathing');
             const config = MODES[currentMode];
-
-            if (isFocus) {
-                // Fim do Foco
-                if (currentCycle >= config.cyclesForLong) {
-                    currentCycle++; // Marca que o próximo é longo
-                }
-                isFocus = false;
-                btnEl.textContent = "INICIAR PAUSA";
-            } else {
-                // Fim da Pausa
-                if (currentCycle > config.cyclesForLong) {
-                    fullReset(); // Reset total após pausa longa
-                    return;
-                }
-                isFocus = true;
-                currentCycle++;
-                btnEl.textContent = "INICIAR FOCO";
-            }
-            
-            renderDots(); // Atualiza bolinhas
-            prepareTimerState(); // Atualiza cores e tempos
-            btnEl.classList.remove('running');
-            
-            // Vibração mais longa para chamar atenção
+            if (isFocus) { if (currentCycle >= config.cyclesForLong) currentCycle++; isFocus = false; btnEl.textContent = "INICIAR PAUSA"; } 
+            else { if (currentCycle > config.cyclesForLong) { fullReset(); return; } isFocus = true; currentCycle++; btnEl.textContent = "INICIAR FOCO"; }
+            renderDots(); prepareTimerState(); btnEl.classList.remove('running');
             if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
         }
-
-        // Inicializar
         init();
-
     </script>
 </body>
 </html>
