@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroNauta Timer</title>
-    <!-- Ícone para adicionar à tela inicial (Apple) -->
+    <title>NeuroNauta Smart</title>
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/96/brain.png">
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/96/brain.png">
     
@@ -12,9 +11,9 @@
         :root {
             --bg-color: #121212;
             --text-color: #e0e0e0;
-            --focus-color: #00e676; /* Verde Neon Suave */
+            --focus-color: #00e676; /* Verde Neon */
             --break-color: #2979ff; /* Azul Neon */
-            --long-break-color: #aa00ff; /* Roxo para pausa longa */
+            --long-break-color: #d500f9; /* Roxo Vibrante */
             --card-bg: #1e1e1e;
         }
 
@@ -31,37 +30,35 @@
             padding: 20px;
             box-sizing: border-box;
             transition: background 0.5s;
-            -webkit-user-select: none; /* Impede seleção de texto no celular */
+            -webkit-user-select: none;
             user-select: none;
+            overflow: hidden; /* Evita scroll elástico no celular */
         }
 
-        /* Ciclos (Contador) */
-        .cycle-counter {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #888;
-            border: 1px solid #333;
+        /* Indicador de Progresso da Sessão (Bolinhas) */
+        .session-progress {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
         }
-        .cycle-highlight {
-            color: var(--focus-color);
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #333;
+            transition: all 0.3s ease;
         }
+        .dot.completed { background-color: var(--focus-color); box-shadow: 0 0 8px var(--focus-color); }
+        .dot.active { background-color: #fff; transform: scale(1.3); }
 
-        /* Container Principal */
+        /* Timer Visual */
         .timer-container {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: min(80vw, 320px); /* Responsivo */
+            height: min(80vw, 320px);
             margin-bottom: 30px;
-            margin-top: 20px;
         }
 
-        /* SVG do Círculo */
         svg {
             transform: rotate(-90deg);
             width: 100%;
@@ -70,368 +67,410 @@
 
         circle {
             fill: none;
-            stroke-width: 15;
+            stroke-width: 12;
             stroke-linecap: round;
             transition: stroke-dashoffset 1s linear, stroke 0.5s;
         }
 
-        .circle-bg {
-            stroke: #333;
-        }
+        .circle-bg { stroke: #2a2a2a; }
+        .circle-progress { stroke: var(--focus-color); }
 
-        .circle-progress {
-            stroke: var(--focus-color);
-        }
-
-        /* Texto Digital no Meio */
         .time-display {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            width: 100%;
         }
 
         .time-text {
             font-size: 3.5rem;
-            font-weight: bold;
+            font-weight: 700;
             font-variant-numeric: tabular-nums;
+            letter-spacing: -1px;
         }
 
         .status-text {
-            font-size: 1rem;
+            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            opacity: 0.7;
+            opacity: 0.6;
             margin-top: 5px;
         }
 
-        /* Botões de Controle */
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        button {
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.1s;
-            color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        .btn-main {
-            background-color: var(--text-color);
+        /* Botão Principal */
+        .main-btn {
+            background: var(--text-color);
             color: var(--bg-color);
-            min-width: 140px;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: transform 0.1s, background 0.3s;
+            min-width: 180px;
+            margin-bottom: 30px;
+            touch-action: manipulation;
         }
+        .main-btn:active { transform: scale(0.96); }
 
-        .btn-reset {
-            background-color: #333;
-            color: #fff;
-        }
-
-        /* Presets */
-        .presets {
+        /* Botões de Modo (Presets) */
+        .presets-container {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 20px;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            max-width: 350px;
+            max-width: 360px;
         }
 
         .preset-btn {
-            background-color: var(--card-bg);
-            padding: 15px 5px;
-            border-radius: 15px;
+            background: transparent;
+            border: none;
+            padding: 10px 5px;
+            border-radius: 12px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 0.8rem;
-            color: #888;
-            box-shadow: none;
-            border: 1px solid transparent;
         }
 
-        .preset-btn span {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 5px;
+        .preset-btn strong {
+            display: block;
+            font-size: 1.1rem;
+            color: #888;
+            margin-bottom: 2px;
         }
+        
+        .preset-btn small { font-size: 0.7rem; }
 
         .preset-btn.active {
-            border: 1px solid var(--focus-color);
-            background-color: #252525;
-            color: var(--focus-color);
+            background: #2d2d2d;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
+        
+        .preset-btn.active strong { color: var(--focus-color); }
+        .preset-btn.active small { color: #fff; }
 
-        /* Rodapé com Dica */
-        .tip {
-            margin-top: 30px;
-            font-size: 0.85rem;
+        /* Dica Rodapé */
+        .info-bar {
+            margin-top: 25px;
+            font-size: 0.8rem;
             color: #555;
             text-align: center;
-            max-width: 300px;
-            line-height: 1.4;
-            font-style: italic;
-            padding: 0 10px;
+            padding: 0 20px;
+        }
+
+        /* Reset discreto */
+        .reset-link {
+            margin-top: 15px;
+            color: #333;
+            font-size: 0.8rem;
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 10px;
         }
 
     </style>
 </head>
 <body>
 
-    <div class="cycle-counter" id="cycleDisplay">Ciclos Hoje: <span class="cycle-highlight">0</span></div>
+    <!-- Bolinhas de progresso -->
+    <div class="session-progress" id="progressDots">
+        <!-- JS vai preencher isso -->
+    </div>
 
     <div class="timer-container">
         <svg>
-            <circle class="circle-bg" cx="150" cy="150" r="130"></circle>
-            <circle class="circle-progress" cx="150" cy="150" r="130"></circle>
+            <circle class="circle-bg" cx="50%" cy="50%" r="45%"></circle>
+            <circle class="circle-progress" cx="50%" cy="50%" r="45%"></circle>
         </svg>
         <div class="time-display">
-            <div class="time-text" id="timeLeft">25:00</div>
-            <div class="status-text" id="statusText">Foco</div>
+            <div class="time-text" id="display">25:00</div>
+            <div class="status-text" id="status">Foco</div>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="btn-main" id="startBtn" onclick="toggleTimer()">Iniciar</button>
-        <button class="btn-reset" onclick="resetTimer()">Parar</button>
+    <button class="main-btn" id="mainBtn" onclick="toggleTimer()">INICIAR</button>
+
+    <div class="presets-container">
+        <!-- 
+           Modo 10m: 4 ciclos para pausa longa de 15m. (Total trabalho: 40m)
+           Modo 25m: 4 ciclos para pausa longa de 20m. (Total trabalho: 100m)
+           Modo 50m: 2 ciclos para pausa longa de 30m. (Total trabalho: 100m - Carga equivalente)
+        -->
+        <button class="preset-btn" onclick="setMode('coldStart', this)">
+            <strong>10</strong>
+            <small>Partida Fria</small>
+        </button>
+        <button class="preset-btn active" onclick="setMode('pomodoro', this)">
+            <strong>25</strong>
+            <small>Clássico</small>
+        </button>
+        <button class="preset-btn" onclick="setMode('hyper', this)">
+            <strong>50</strong>
+            <small>Hiperfoco</small>
+        </button>
     </div>
 
-    <div class="presets">
-        <button class="preset-btn" onclick="setMode(10, 3, this)">
-            <span>10/3</span> Partida Fria
-        </button>
-        <button class="preset-btn active" onclick="setMode(25, 5, this)">
-            <span>25/5</span> Pomodoro
-        </button>
-        <button class="preset-btn" onclick="setMode(50, 15, this)">
-            <span>50/15</span> Hiperfoco
-        </button>
+    <div class="info-bar" id="infoText">
+        Modo Clássico: 4 ciclos até o descanso longo.
     </div>
 
-    <div class="tip" id="tipText">
-        "Não pense. Apenas aperte o botão iniciar."
-    </div>
+    <div class="reset-link" onclick="fullReset()">Reiniciar Sessão</div>
 
     <script>
-        // --- Variáveis de Estado ---
-        let focusTime = 25 * 60;
-        let breakTime = 5 * 60;
-        let currentTime = focusTime;
-        let totalTimeInitial = focusTime;
-        
-        let isFocusMode = true; // true = Foco, false = Pausa
-        let isRunning = false;
-        let interval = null;
-        let cyclesCompleted = 0;
+        // --- Configuração Científica dos Modos ---
+        const MODES = {
+            coldStart: { 
+                focus: 10, shortBreak: 3, longBreak: 15, cyclesForLong: 4, 
+                desc: "4 ciclos curtos para 'pegar no tranco'." 
+            },
+            pomodoro: { 
+                focus: 25, shortBreak: 5, longBreak: 20, cyclesForLong: 4, 
+                desc: "Ritmo clássico. Otimizado para resistência." 
+            },
+            hyper: { 
+                focus: 50, shortBreak: 10, longBreak: 30, cyclesForLong: 2, 
+                desc: "Trabalho profundo. Apenas 2 ciclos até o descanso maior." 
+            }
+        };
 
-        // --- Elementos ---
-        const display = document.getElementById('timeLeft');
-        const statusText = document.getElementById('statusText');
-        const circle = document.querySelector('.circle-progress');
-        const startBtn = document.getElementById('startBtn');
-        const tipText = document.getElementById('tipText');
-        const cycleDisplay = document.querySelector('#cycleDisplay span');
+        // Estado Global
+        let currentMode = 'pomodoro';
+        let timeLeft = MODES.pomodoro.focus * 60;
+        let totalTime = timeLeft;
+        let isRunning = false;
+        let isFocus = true;
+        let currentCycle = 1; // Qual ciclo estamos (1, 2, 3...)
+        let timerInterval = null;
+
+        // Elementos UI
+        const displayEl = document.getElementById('display');
+        const statusEl = document.getElementById('status');
+        const circleEl = document.querySelector('.circle-progress');
+        const btnEl = document.getElementById('mainBtn');
+        const dotsContainer = document.getElementById('progressDots');
+        const infoText = document.getElementById('infoText');
         const root = document.documentElement;
 
-        // Configuração do SVG
-        const radius = circle.r.baseVal.value;
-        const circumference = radius * 2 * Math.PI;
-        circle.style.strokeDasharray = `${circumference} ${circumference}`;
-        circle.style.strokeDashoffset = 0; // Começa cheio
+        // Configuração Inicial SVG
+        const radius = circleEl.r.baseVal.valueInSpecifiedUnits / 100 * (Math.min(window.innerWidth, window.innerHeight) * 0.8 / 2); // Aproximação
+        // Vamos usar um calculo mais simples para o dasharray baseado em porcentagem (CSS puro seria ideal mas SVG precisa de números)
+        // Simplificação: o pathLength="100" no SVG facilitaria, mas vamos usar JS clássico
+        const circumference = 2 * Math.PI * 45; // 45 é o raio definido no HTML (%)
+        // O valor real depende do viewport do SVG. Vamos usar stroke-dasharray em % no CSS se possível, 
+        // mas para garantir animação fluida, vamos calcular via pathLength fake no JS:
+        circleEl.style.strokeDasharray = "283"; // 2 * pi * 45 aprox
+        circleEl.style.strokeDashoffset = "0";
 
-        // --- Sons (Oscilador do Navegador - Não precisa de arquivo externo) ---
+        // --- Áudio (Oscilador WebAudio API) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        function playBeep(type) {
-            // type: 'start', 'end', 'tick'
+        function beep(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
             
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
             
             if (type === 'end') {
-                // Som de sucesso/fim (agudo e duplo)
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(500, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
-                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.5);
-                // Vibrar celular
-                if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                // Sucesso: acorde maior ascendente
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.start(now);
+                osc.stop(now + 0.6);
+                if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
             } else {
-                // Clique suave
-                oscillator.type = 'triangle';
-                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.1);
+                // Clique Start/Stop
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
             }
         }
 
-        // --- Funções Principais ---
+        // --- Funções Lógicas ---
 
-        function updateDisplay(time) {
-            const minutes = Math.floor(time / 60);
-            const seconds = time % 60;
-            display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        function init() {
+            renderDots();
+            updateDisplay();
+        }
+
+        function renderDots() {
+            dotsContainer.innerHTML = '';
+            const totalCycles = MODES[currentMode].cyclesForLong;
             
-            // Título da aba (para ver no PC)
-            document.title = `(${minutes}:${seconds.toString().padStart(2, '0')}) NeuroNauta`;
+            for (let i = 1; i <= totalCycles; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                if (i < currentCycle) dot.classList.add('completed');
+                if (i === currentCycle && isFocus) dot.classList.add('active');
+                dotsContainer.appendChild(dot);
+            }
+        }
 
-            // Círculo
-            // Se estiver em pausa, o círculo enche. Se foco, esvazia (opcional, aqui ambos esvaziam)
-            const offset = circumference - (time / totalTimeInitial) * circumference;
-            circle.style.strokeDashoffset = offset;
+        function setMode(modeKey, btn) {
+            if (isRunning) toggleTimer(); // Pausa se estiver rodando
+            
+            currentMode = modeKey;
+            
+            // UI Update
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            infoText.textContent = MODES[modeKey].desc;
+            
+            // Reset Lógico
+            fullReset();
+        }
+
+        function fullReset() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            currentCycle = 1;
+            isFocus = true;
+            prepareTimerState();
+            renderDots();
+            btnEl.textContent = "INICIAR";
+            btnEl.style.backgroundColor = "var(--text-color)";
+            btnEl.style.color = "var(--bg-color)";
+            resetColors();
+        }
+
+        function prepareTimerState() {
+            // Define o tempo baseado se é foco, pausa curta ou pausa longa
+            const config = MODES[currentMode];
+            
+            if (isFocus) {
+                timeLeft = config.focus * 60;
+                statusEl.textContent = "FOCO";
+                resetColors(); // Volta pro verde
+            } else {
+                // É pausa. Curta ou Longa?
+                // Se acabou o último ciclo, é longa.
+                if (currentCycle > config.cyclesForLong) {
+                    timeLeft = config.longBreak * 60;
+                    statusEl.textContent = "PAUSA LONGA";
+                    root.style.setProperty('--focus-color', 'var(--long-break-color)');
+                    circleEl.style.stroke = 'var(--long-break-color)';
+                } else {
+                    timeLeft = config.shortBreak * 60;
+                    statusEl.textContent = "PAUSA";
+                    root.style.setProperty('--focus-color', 'var(--break-color)');
+                    circleEl.style.stroke = 'var(--break-color)';
+                }
+            }
+            totalTime = timeLeft;
+            updateDisplay();
+            circleEl.style.strokeDashoffset = "0";
+        }
+
+        function resetColors() {
+            root.style.setProperty('--focus-color', '#00e676'); // Verde original
+            circleEl.style.stroke = '#00e676';
         }
 
         function toggleTimer() {
             if (isRunning) {
-                pauseTimer();
+                // Pausar
+                clearInterval(timerInterval);
+                isRunning = false;
+                btnEl.textContent = "CONTINUAR";
+                beep('click');
             } else {
-                startTimer();
+                // Iniciar
+                // Wake Lock
+                if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
+                
+                timerInterval = setInterval(tick, 1000);
+                isRunning = true;
+                btnEl.textContent = "PAUSAR";
+                btnEl.style.backgroundColor = "#fff"; // Branco neutro durante execução
+                btnEl.style.color = "#000";
+                beep('click');
             }
         }
 
-        async function startTimer() {
-            // Tenta Wake Lock (Manter tela ligada)
-            try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
-
-            isRunning = true;
-            startBtn.textContent = "Pausar";
-            startBtn.style.backgroundColor = "#fff"; // Cor neutra ao rodar
-            startBtn.style.color = "#000";
-            
-            playBeep('start');
-
-            interval = setInterval(() => {
-                if (currentTime > 0) {
-                    currentTime--;
-                    updateDisplay(currentTime);
-                } else {
-                    completeCycle();
-                }
-            }, 1000);
+        function tick() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                finishBlock();
+            }
         }
 
-        function pauseTimer() {
+        function updateDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            displayEl.textContent = `${m}:${s}`;
+            document.title = `(${m}:${s}) NeuroNauta`;
+            
+            // Círculo
+            const percent = timeLeft / totalTime;
+            const offset = 283 * (1 - percent);
+            circleEl.style.strokeDashoffset = offset;
+        }
+
+        function finishBlock() {
+            clearInterval(timerInterval);
             isRunning = false;
-            clearInterval(interval);
-            startBtn.textContent = "Continuar";
-            // Retorna cor do botão para a cor do modo atual
-            updateThemeColors();
-        }
-
-        function resetTimer() {
-            pauseTimer();
-            startBtn.textContent = "Iniciar";
-            // Reinicia o tempo para o padrão do modo atual
-            currentTime = isFocusMode ? focusTime : breakTime;
-            totalTimeInitial = currentTime;
-            updateDisplay(currentTime);
-            circle.style.strokeDashoffset = 0; // Reseta círculo cheio
-            updateThemeColors();
-        }
-
-        function completeCycle() {
-            pauseTimer(); // Para o timer no 00:00
-            playBeep('end');
-
-            if (isFocusMode) {
-                // FIM DO FOCO -> VAI PARA PAUSA
-                cyclesCompleted++;
-                cycleDisplay.textContent = cyclesCompleted;
-                
-                // Sugestão de Pausa Longa após 4 ciclos
-                if (cyclesCompleted % 4 === 0) {
-                    statusText.textContent = "Pausa Longa Recomendada";
-                    breakTime = 15 * 60; // 15 min temporários
-                    tipText.textContent = "Você completou 4 ciclos! Tire um descanso maior.";
-                    root.style.setProperty('--break-color', 'var(--long-break-color)');
-                } else {
-                    statusText.textContent = "Pausa - Respire";
-                    tipText.textContent = "Saia da tela. Alongue-se. Beba água.";
-                }
-
-                isFocusMode = false;
-                startBtn.textContent = "Iniciar Pausa";
+            beep('end');
             
+            const config = MODES[currentMode];
+
+            if (isFocus) {
+                // Terminou FOCO
+                // Verifica se completou o ciclo de pausa longa
+                if (currentCycle >= config.cyclesForLong) {
+                    currentCycle++; // Avança para indicar que o próximo é pausa longa
+                    // Não incrementamos mais visualmente as bolinhas aqui para não quebrar layout, 
+                    // apenas mudamos o estado.
+                } 
+                
+                isFocus = false; // Vai para Pausa
+                btnEl.textContent = "INICIAR PAUSA";
+                
+                // Atualiza bolinha para completa
+                renderDots(); 
+
             } else {
-                // FIM DA PAUSA -> VAI PARA FOCO
-                isFocusMode = true;
-                statusText.textContent = "Foco";
-                tipText.textContent = "Pronto para voltar? Apenas comece.";
-                
-                // Restaura tempo de pausa padrão caso tenha sido longa
-                const activeBtn = document.querySelector('.preset-btn.active span');
-                // Gambiarra inteligente para pegar o tempo original do botão ativo
-                if(activeBtn) {
-                     // Recupera valor original do botão (ex: '25/5' -> pega o 5)
-                     const breakVal = parseInt(activeBtn.innerText.split('/')[1]);
-                     breakTime = breakVal * 60;
+                // Terminou PAUSA
+                if (currentCycle > config.cyclesForLong) {
+                    // Acabou a pausa longa, reseta tudo
+                    fullReset();
+                    return;
                 }
-
-                startBtn.textContent = "Iniciar Foco";
+                
+                isFocus = true; // Volta para Foco
+                currentCycle++; // Começa novo ciclo
+                btnEl.textContent = "INICIAR FOCO";
+                renderDots();
             }
 
-            // Prepara o próximo timer
-            currentTime = isFocusMode ? focusTime : breakTime;
-            totalTimeInitial = currentTime;
-            updateDisplay(currentTime);
-            circle.style.strokeDashoffset = 0;
-            updateThemeColors();
+            prepareTimerState();
+            // Cores do botão para indicar o próximo passo
+            const nextColor = isFocus ? "var(--focus-color)" : (currentCycle > config.cyclesForLong ? "var(--long-break-color)" : "var(--break-color)");
+            btnEl.style.backgroundColor = nextColor;
+            btnEl.style.color = "#fff";
         }
 
-        function updateThemeColors() {
-            const color = isFocusMode ? "var(--focus-color)" : (cyclesCompleted > 0 && cyclesCompleted % 4 === 0 && !isFocusMode ? "var(--long-break-color)" : "var(--break-color)");
-            
-            root.style.setProperty('--current-color', color);
-            circle.style.stroke = color;
-            
-            // Se não estiver rodando, o botão assume a cor do modo
-            if (!isRunning) {
-                startBtn.style.backgroundColor = color;
-                startBtn.style.color = "#fff";
-            }
-        }
+        // Boot
+        init();
 
-        function setMode(focusMin, breakMin, btn) {
-            // Atualiza configurações globais
-            focusTime = focusMin * 60;
-            breakTime = breakMin * 60;
-            
-            // Atualiza UI dos botões
-            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Se trocar de modo, forçamos o reset para o início de um Foco
-            isFocusMode = true;
-            statusText.textContent = "Foco";
-            tipText.textContent = "Modo alterado. Pronto?";
-            
-            resetTimer();
-        }
-
-        // Inicialização
-        updateThemeColors();
     </script>
 </body>
 </html>
