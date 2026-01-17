@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <title>NeuroNauta Timekeeper</title>
+    <title>NeuroNauta v6</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/brain.png">
@@ -42,12 +42,13 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            overflow: hidden;
+            padding-bottom: 50px; /* Espaço para versão */
+            overflow-y: auto; /* Permite scroll se a tela for pequena */
             transition: background 0.5s ease;
             user-select: none;
         }
 
-        /* --- UI Elements --- */
+        /* Install Button */
         #installBtn {
             display: none; position: fixed; top: 20px; left: 20px;
             background: var(--focus-color); color: #000;
@@ -56,7 +57,7 @@
         }
 
         .session-progress {
-            display: flex; gap: 12px; margin-bottom: 30px;
+            display: flex; gap: 12px; margin-bottom: 20px;
             background: rgba(255, 255, 255, 0.05); padding: 10px 20px;
             border-radius: 50px; backdrop-filter: blur(5px);
         }
@@ -68,7 +69,7 @@
         .dot.completed { background-color: var(--current-color); box-shadow: 0 0 10px var(--current-glow); }
         .dot.active { background-color: #fff; transform: scale(1.5); box-shadow: 0 0 15px rgba(255,255,255,0.5); }
 
-        .timer-wrapper { position: relative; width: 260px; height: 260px; margin-bottom: 30px; }
+        .timer-wrapper { position: relative; width: 240px; height: 240px; margin-bottom: 25px; flex-shrink: 0; }
 
         .breathing { animation: breathe 4s infinite ease-in-out; }
         @keyframes breathe {
@@ -86,11 +87,11 @@
             transform: translate(-50%, -50%); text-align: center;
         }
         .time-text { font-size: 3.5rem; font-weight: 700; letter-spacing: -2px; line-height: 1; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .status-badge { margin-top: 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 3px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; color: var(--text-muted); font-weight: bold; }
+        .status-badge { margin-top: 5px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 3px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; color: var(--text-muted); font-weight: bold; }
 
         .main-btn {
             background: rgba(255, 255, 255, 0.05); color: var(--current-color);
-            border: 2px solid var(--current-color); padding: 18px 0; width: 200px;
+            border: 2px solid var(--current-color); padding: 15px 0; width: 180px;
             border-radius: 60px; font-size: 1.1rem; font-weight: 700;
             font-family: 'JetBrains Mono', monospace; cursor: pointer;
             transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;
@@ -104,17 +105,18 @@
             border-radius: 16px; padding: 15px; margin-bottom: 20px;
             border: 1px solid #334155;
         }
-        .sound-header { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .sound-header { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
         .sound-btn {
             background: #0f172a; border: 1px solid #334155; color: #64748b;
-            padding: 8px; border-radius: 8px; font-size: 0.7rem; cursor: pointer;
+            padding: 10px 5px; border-radius: 8px; font-size: 0.75rem; cursor: pointer;
             transition: all 0.2s; display: flex; flex-direction: column; align-items: center;
         }
-        .sound-btn.active { border-color: var(--focus-color); color: var(--focus-color); background: rgba(0, 255, 157, 0.05); }
-        .sound-group-label { font-size: 0.7rem; color: #fff; grid-column: span 3; margin-top: 5px; margin-bottom: 2px; }
+        .sound-btn:active { transform: scale(0.95); }
+        .sound-btn.active { border-color: var(--focus-color); color: var(--focus-color); background: rgba(0, 255, 157, 0.05); box-shadow: 0 0 10px rgba(0,255,157,0.1); }
+        .sound-group-label { font-size: 0.7rem; color: #94a3b8; grid-column: span 3; margin-top: 8px; margin-bottom: 4px; font-weight: bold; }
 
-        .presets-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; width: 100%; max-width: 340px; }
+        .presets-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; width: 100%; max-width: 340px; margin-bottom: 20px;}
         .mode-card { background: var(--card-bg); border: 1px solid transparent; padding: 12px 10px; border-radius: 16px; cursor: pointer; text-align: center; opacity: 0.6; transition: all 0.2s; }
         .mode-card strong { display: block; font-size: 1.2rem; margin-bottom: 4px; }
         .mode-card span { font-size: 0.6rem; text-transform: uppercase; color: var(--text-muted); }
@@ -129,13 +131,21 @@
         }
         .dnd-alert.show { transform: translateY(0); }
 
-        .reset-btn { position: fixed; top: 20px; right: 20px; background: none; border: none; color: var(--text-muted); opacity: 0.3; font-size: 1.2rem; }
+        .version-tag {
+            position: fixed; bottom: 10px; right: 10px; 
+            font-size: 0.7rem; color: #334155; opacity: 0.5;
+        }
+
+        .reset-btn { position: fixed; top: 15px; right: 15px; background: none; border: none; color: var(--text-muted); opacity: 0.3; font-size: 1.5rem; cursor: pointer; padding: 10px; }
     </style>
 </head>
 <body>
 
+    <div class="version-tag">v6.0 - Sonic</div>
+
     <button id="installBtn">📲 Instalar</button>
     <button class="reset-btn" onclick="fullReset()">↺</button>
+    
     <div class="session-progress" id="progressDots"></div>
 
     <div class="timer-wrapper" id="timerWrapper">
@@ -151,27 +161,28 @@
 
     <button class="main-btn" id="mainBtn" onclick="toggleTimer()">INICIAR</button>
 
+    <!-- Painel de Som -->
     <div class="sound-panel">
         <div class="sound-header">
-            <span>Ruído Neural</span> <span id="soundStatus">Desligado</span>
+            <span>🔊 Ruído de Foco</span> <span id="soundStatus" style="font-size: 0.7rem; color: var(--focus-color)">OFF</span>
         </div>
         
-        <div class="sound-group-label">Brown (Profundo)</div>
+        <div class="sound-group-label">BROWN (Grave/Profundo)</div>
         <div class="sound-grid">
             <button class="sound-btn" onclick="setNoise('brown', 0, this)">Padrão</button>
-            <button class="sound-btn" onclick="setNoise('brown', 1, this)">Profundo</button>
-            <button class="sound-btn" onclick="setNoise('brown', 2, this)">Leve</button>
+            <button class="sound-btn" onclick="setNoise('brown', 1, this)">Trovão</button>
+            <button class="sound-btn" onclick="setNoise('brown', 2, this)">Suave</button>
         </div>
 
-        <div class="sound-group-label">Pink (Chuva)</div>
+        <div class="sound-group-label">PINK (Chuva/Cachoeira)</div>
         <div class="sound-grid">
             <button class="sound-btn" onclick="setNoise('pink', 0, this)">Padrão</button>
-            <button class="sound-btn" onclick="setNoise('pink', 1, this)">Suave</button>
-            <button class="sound-btn" onclick="setNoise('pink', 2, this)">Brilho</button>
+            <button class="sound-btn" onclick="setNoise('pink', 1, this)">Abafado</button>
+            <button class="sound-btn" onclick="setNoise('pink', 2, this)">Cristal</button>
         </div>
         
-        <div style="text-align: center; margin-top: 5px;">
-            <button class="sound-btn" style="width: 100%" onclick="setNoise('off', 0, this)">Silêncio</button>
+        <div style="text-align: center; margin-top: 8px;">
+            <button class="sound-btn" style="width: 100%; border-color: #334155;" onclick="setNoise('off', 0, this)">Silenciar</button>
         </div>
     </div>
 
@@ -184,10 +195,17 @@
     <div class="dnd-alert" id="dndAlert">⚠️ Ative o "Não Perturbe"</div>
 
     <script>
-        // --- PWA SETUP ---
+        // --- PWA UPDATE LOGIC ---
         let deferredPrompt;
         const installBtn = document.getElementById('installBtn');
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
+        
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                // Tenta atualizar assim que abre
+                reg.update();
+            });
+        }
+        
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'block'; });
         installBtn.addEventListener('click', () => { installBtn.style.display = 'none'; deferredPrompt.prompt(); });
 
@@ -195,7 +213,11 @@
         let audioCtx, noiseSource, gainNode, filterNode;
         let currentNoiseType = 'off', currentVariant = 0;
 
-        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function initAudio() { 
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
 
         function createNoiseBuffer(type) {
             const bufferSize = audioCtx.sampleRate * 2;
@@ -224,6 +246,7 @@
             if (currentNoiseType === 'off') return;
             initAudio(); if (audioCtx.state === 'suspended') audioCtx.resume();
             stopNoise();
+            
             noiseSource = audioCtx.createBufferSource();
             noiseSource.buffer = createNoiseBuffer(currentNoiseType);
             noiseSource.loop = true;
@@ -231,12 +254,13 @@
             filterNode = audioCtx.createBiquadFilter();
 
             if (currentNoiseType === 'brown') {
-                if (currentVariant === 1) { filterNode.type = 'lowpass'; filterNode.frequency.value = 200; }
-                else if (currentVariant === 2) { filterNode.type = 'highpass'; filterNode.frequency.value = 100; }
+                if (currentVariant === 1) { filterNode.type = 'lowpass'; filterNode.frequency.value = 150; } // Mais grave
+                else if (currentVariant === 2) { filterNode.type = 'lowpass'; filterNode.frequency.value = 400; } // Mais suave
             } else if (currentNoiseType === 'pink') {
                 if (currentVariant === 1) { filterNode.type = 'lowpass'; filterNode.frequency.value = 500; }
-                else if (currentVariant === 2) { filterNode.type = 'highpass'; filterNode.frequency.value = 800; }
+                else if (currentVariant === 2) { filterNode.type = 'highpass'; filterNode.frequency.value = 1000; }
             }
+            
             noiseSource.connect(filterNode); filterNode.connect(gainNode); gainNode.connect(audioCtx.destination);
             gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
             gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 2);
@@ -256,12 +280,15 @@
             currentNoiseType = type; currentVariant = variant;
             document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
             if (type !== 'off') btn.classList.add('active');
-            const n = ['Padrão','Deep/Soft','Light/Bright'];
-            document.getElementById('soundStatus').textContent = type === 'off' ? 'Desligado' : `${type.toUpperCase()} (${n[variant]})`;
+            
+            const n = ['Padrão','Var. 1','Var. 2'];
+            const statusLabel = type === 'off' ? 'OFF' : `${type.toUpperCase()}`;
+            document.getElementById('soundStatus').textContent = statusLabel;
+            
             if (isRunning && isFocus) playNoise();
         }
 
-        // --- TIMER ENGINE V6 (Timestamp Precision) ---
+        // --- TIMER ENGINE V6 ---
         const MODES = {
             coldStart: { focus: 10, shortBreak: 3, longBreak: 15, cyclesForLong: 4, desc: "Aquecimento rápido." },
             pomodoro: { focus: 25, shortBreak: 5, longBreak: 20, cyclesForLong: 4, desc: "Resistência padrão." },
@@ -269,11 +296,9 @@
         };
 
         let currentMode = 'pomodoro';
-        let defaultTime = MODES.pomodoro.focus * 60;
-        let totalTime = defaultTime;
-        
+        let totalTime = MODES.pomodoro.focus * 60;
         let endTime = 0;
-        let remainingTime = defaultTime;
+        let remainingTime = totalTime;
         let isRunning = false;
         let isFocus = true;
         let currentCycle = 1;
@@ -289,7 +314,6 @@
         const root = document.documentElement;
         const dndAlert = document.getElementById('dndAlert');
 
-        // Audio Beep
         function playBeep(type) {
             initAudio();
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
@@ -306,19 +330,13 @@
             }
         }
 
-        // Wake Lock Manager
         async function requestWakeLock() {
             try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
         }
 
-        // Visibility Handler (Corrigir tempo ao voltar pro app)
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                if (isRunning) {
-                    tick(); // Força atualização imediata
-                    requestWakeLock(); // Re-solicita tela ligada
-                    if(isFocus) playNoise(); // Tenta retomar som
-                }
+                if (isRunning) { tick(); requestWakeLock(); if(isFocus) playNoise(); }
             }
         });
 
@@ -358,98 +376,61 @@
         function fullReset() {
             isRunning = false; clearInterval(timerInterval); 
             currentCycle = 1; isFocus = true; stopNoise();
-            
-            // Set initial times
             const config = MODES[currentMode];
-            defaultTime = config.focus * 60;
-            remainingTime = defaultTime;
-            totalTime = defaultTime;
-
+            totalTime = config.focus * 60; remainingTime = totalTime;
             prepareTimerState(); renderDots(); 
             btnEl.textContent = "INICIAR"; btnEl.classList.remove('running'); wrapperEl.classList.remove('breathing');
         }
 
         function prepareTimerState() {
             const config = MODES[currentMode];
-            if (isFocus) { 
-                defaultTime = config.focus * 60; 
-                statusEl.textContent = "FOCO"; 
-            } else { 
-                defaultTime = (currentCycle > config.cyclesForLong) ? config.longBreak*60 : config.shortBreak*60; 
-                statusEl.textContent = (currentCycle > config.cyclesForLong) ? "DESCANSÃO" : "PAUSA"; 
-            }
-            remainingTime = defaultTime;
-            totalTime = defaultTime;
+            if (isFocus) { totalTime = config.focus * 60; statusEl.textContent = "FOCO"; } 
+            else { totalTime = (currentCycle > config.cyclesForLong) ? config.longBreak*60 : config.shortBreak*60; statusEl.textContent = (currentCycle > config.cyclesForLong) ? "DESCANSÃO" : "PAUSA"; }
+            remainingTime = totalTime;
             updateTheme(); updateDisplay(remainingTime); circleEl.style.strokeDashoffset = "0";
         }
 
         function toggleTimer() {
             initAudio(); playBeep('click');
-            
             if (isRunning) {
-                // PAUSING
                 clearInterval(timerInterval); isRunning = false; 
-                // Salva quanto tempo faltava
-                const now = Date.now();
-                remainingTime = Math.ceil((endTime - now) / 1000);
-                
+                const now = Date.now(); remainingTime = Math.ceil((endTime - now) / 1000);
                 btnEl.textContent = "CONTINUAR"; btnEl.classList.remove('running'); 
                 wrapperEl.classList.remove('breathing'); stopNoise();
             } else {
-                // STARTING / RESUMING
                 requestWakeLock();
-                // Calcula o horário futuro de término
                 endTime = Date.now() + (remainingTime * 1000);
-                
-                timerInterval = setInterval(tick, 200); // Check 5x per second
-                isRunning = true; 
-                btnEl.textContent = "PAUSAR"; btnEl.classList.add('running'); 
+                timerInterval = setInterval(tick, 200); 
+                isRunning = true; btnEl.textContent = "PAUSAR"; btnEl.classList.add('running'); 
                 wrapperEl.classList.add('breathing');
-                
                 if (isFocus) { playNoise(); showDNDAlert(); }
             }
         }
 
-        function showDNDAlert() {
-            dndAlert.classList.add('show');
-            setTimeout(() => { dndAlert.classList.remove('show'); }, 5000);
-        }
+        function showDNDAlert() { dndAlert.classList.add('show'); setTimeout(() => { dndAlert.classList.remove('show'); }, 5000); }
 
         function tick() {
-            const now = Date.now();
-            const delta = endTime - now;
-            
-            if (delta <= 0) {
-                remainingTime = 0;
-                updateDisplay(0);
-                finishBlock();
-            } else {
-                remainingTime = Math.ceil(delta / 1000);
-                updateDisplay(remainingTime);
-            }
+            const now = Date.now(); const delta = endTime - now;
+            if (delta <= 0) { remainingTime = 0; updateDisplay(0); finishBlock(); } 
+            else { remainingTime = Math.ceil(delta / 1000); updateDisplay(remainingTime); }
         }
 
         function updateDisplay(secs) {
             const m = Math.floor(secs / 60).toString().padStart(2, '0'); 
             const s = (secs % 60).toString().padStart(2, '0');
             displayEl.textContent = `${m}:${s}`; document.title = `(${m}:${s}) NeuroNauta`;
-            const percent = (secs / totalTime) * 100; 
-            circleEl.style.strokeDashoffset = 100 - percent;
+            const percent = (secs / totalTime) * 100; circleEl.style.strokeDashoffset = 100 - percent;
         }
 
         function finishBlock() {
-            clearInterval(timerInterval); isRunning = false; 
-            playBeep('end'); stopNoise();
+            clearInterval(timerInterval); isRunning = false; playBeep('end'); stopNoise();
             wrapperEl.classList.remove('breathing');
-            
             const config = MODES[currentMode];
             if (isFocus) { if (currentCycle >= config.cyclesForLong) currentCycle++; isFocus = false; btnEl.textContent = "INICIAR PAUSA"; } 
             else { if (currentCycle > config.cyclesForLong) { fullReset(); return; } isFocus = true; currentCycle++; btnEl.textContent = "INICIAR FOCO"; }
-            
             renderDots(); prepareTimerState(); btnEl.classList.remove('running');
             if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
         }
-
         init();
     </script>
 </body>
