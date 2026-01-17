@@ -1,12 +1,12 @@
 {
-  "name": "NeuroNauta Sonic",
+  "name": "NeuroNauta",
   "short_name": "NeuroNauta",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "orientation": "portrait",
-  "version": "6.0",
+  "version": "7.0",
   "icons": [
     {
       "src": "https://img.icons8.com/fluency/192/brain.png",
